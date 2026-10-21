@@ -1,16 +1,9 @@
 import os
 import time
 from typing import TypedDict
-from pathlib import Path
-from dotenv import load_dotenv
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
 from langchain_core.messages import HumanMessage
-from langchain_chroma import Chroma
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader
-from langgraph.graph import StateGraph, START, END
-from pathlib import Path
+
 from pathlib import Path
 import shutil
 from langchain_chroma import Chroma
@@ -112,16 +105,22 @@ def detect_topic(pdf: Path) -> str:
 
     return "general"
 
+
 def router_node(state: RAGState):
     """Choose the correct topic retriever using the LLM."""
 
     q = state["question"]
 
+    print("\n========== ROUTER DEBUG ==========")
+    print("Question received:", repr(q))
+
+    prompt = ROUTER_PROMPT.format(question=q)
+
     resp = model.invoke([
-        HumanMessage(
-            content=ROUTER_PROMPT.format(question=q)
-        )
+        HumanMessage(content=prompt)
     ])
+
+    print("Raw LLM response:", repr(resp.content))
 
     topic = (
         resp.content
@@ -132,7 +131,8 @@ def router_node(state: RAGState):
         .strip()
     )
 
-    # Normalize topic names to graph labels
+    print("Normalized topic:", repr(topic))
+
     topic_mapping = {
         "machine_learning": "ml",
         "deep_learning": "dl",
@@ -147,13 +147,8 @@ def router_node(state: RAGState):
 
     topic = topic_mapping.get(topic)
 
-    # Validate the router output
     valid_topics = {
-        "ml",
-        "dl",
-        "dsa",
-        "c_programming",
-        "general",
+        "ml", "dl", "dsa", "c_programming", "general"
     }
 
     if topic not in valid_topics:
@@ -161,9 +156,10 @@ def router_node(state: RAGState):
             f"Unexpected router output: {resp.content!r}"
         )
 
-    print(f"🧭 Router chose topic: {topic}")
 
     return {"topic": topic}
+
+
 
 def _retrieve_from_topic(state: RAGState, topic: str):
     """Retrieve relevant documents from the selected topic store."""
@@ -345,21 +341,3 @@ def route_by_topic(state: RAGState) -> str:
     topic = state["topic"]
     return f"retrieve_{topic}"
 
-
-def ask(question):
-    result = app.invoke({"question": question})
-
-    print("=" * 70)
-    print("❓", question)
-    print("🧭 Topic :", result["topic"])
-    print("📚 Sources:", ", ".join(result["sources"]))
-    print("-" * 70)
-    print("📖 ANSWER:\n", result["answer"])
-    print("-" * 70)
-    print("📝 SUMMARY:\n", result["summary"])
-    print("-" * 70)
-    print("⭐ KEY POINTS:")
-    for p in result["key_points"]:
-        print(f"  • {p}")
-    print("=" * 70, "\n")
-    return result

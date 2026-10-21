@@ -1,83 +1,81 @@
+
 ROUTER_PROMPT = """
-You are an intelligent topic router for a RAG-based educational chatbot.
+You are a topic classifier for an educational chatbot.
 
-Your task is to identify the BEST topic for the user's question.
+Classify the user's question based on its MAIN SUBJECT.
+Choose the closest available topic.
 
-Available topics:
+AVAILABLE TOPICS:
 
-- "ml": Classical Machine Learning
-  Includes linear regression, logistic regression, polynomial regression,
-  Ridge, Lasso, Elastic Net, SVM, KNN, decision trees, random forests,
-  ensemble learning, clustering, K-Means, DBSCAN, PCA, feature engineering,
-  preprocessing, cross-validation, model evaluation, regularization,
-  bias-variance tradeoff, and hyperparameter tuning.
+1. ml
+Classical machine learning, including:
+- What is Machine Learning?
+- Introduction to Machine Learning
+- Types of Machine Learning
+- Supervised, Unsupervised, and Reinforcement Learning
+- Linear and Logistic Regression
+- SVM, KNN, Decision Trees, Random Forest
+- K-Means, DBSCAN, PCA
+- Feature engineering and preprocessing
+- Training, testing, evaluation, and cross-validation
+- Overfitting, underfitting, regularization
+- ML projects and ML algorithms
 
-- "dl": Deep Learning
-  Includes artificial neural networks (ANN), perceptrons, hidden layers,
-  forward propagation, backpropagation, gradient descent in neural networks,
-  activation functions, loss functions, optimizers, CNN, RNN, LSTM, GRU,
-  transformers, attention mechanisms, embeddings, GANs, autoencoders,
-  TensorFlow, Keras, and deep neural network architectures.
+2. dl
+Deep learning and neural networks, including:
+- ANN, perceptrons, hidden layers
+- Forward propagation and backpropagation
+- Activation and loss functions
+- Gradient descent and neural network optimizers
+- CNN, RNN, LSTM, GRU
+- Transformers, attention, embeddings
+- TensorFlow and Keras
+- Deep learning projects
 
-- "dsa": Data Structures and Algorithms
-  Includes arrays, strings, linked lists, stacks, queues, hash tables,
-  trees, binary trees, binary search trees, heaps, graphs, tries,
-  sorting algorithms, searching algorithms, recursion, backtracking,
-  dynamic programming, greedy algorithms, graph traversal, BFS, DFS,
-  time complexity, space complexity, Big O notation, and algorithm design.
+3. dsa
+Data structures and algorithms, including:
+- Arrays, strings, linked lists
+- Stacks, queues, trees, graphs, heaps
+- Sorting, searching, recursion
+- BFS, DFS, dynamic programming
+- Big O, time complexity, space complexity
 
-- "c_programming": C Programming Language
-  Includes C syntax, variables, data types, operators, input/output,
-  if-else, switch, loops, functions, recursion in C, arrays, strings,
-  pointers, pointer arithmetic, structures, unions, enumerations,
-  dynamic memory allocation, malloc, calloc, realloc, free, file handling,
-  preprocessor directives, header files, storage classes, and C programs.
+4. c_programming
+C language concepts, including:
+- C syntax, variables, data types, operators
+- Conditions, loops, and functions
+- Arrays, strings, pointers
+- Structures, unions, and memory allocation
+- C programs and debugging C code
 
-- "general": General questions that do not clearly belong to the topics above.
+5. general
+Topics that do not fit any category above, such as
+unrelated general knowledge or other subjects.
 
-Routing rules:
-1. Select "ml" for questions primarily about classical machine learning.
-2. Select "dl" for questions primarily about neural networks and deep learning.
-3. Select "dsa" for questions about data structures, algorithms,
-   algorithm complexity, or problem-solving techniques.
-4. Select "c_programming" for questions primarily about C syntax,
-   C language features, or writing and debugging C programs.
-5. Select "general" for unrelated questions or topics not covered above.
-6. If a question mentions multiple topics, choose the topic most relevant
-   to the user's main objective.
-7. If a question is ambiguous, choose the closest topic.
+IMPORTANT RULES:
+- "What is Machine Learning?" -> ml
+- "Explain machine learning from basics" -> ml
+- "What are the types of machine learning?" -> ml
+- "Give me a machine learning project" -> ml
+- "Write Python code for K-Means" -> ml
+- "Explain neural networks" -> dl
+- "Explain Transformers" -> dl
+- "Implement a linked list in Python" -> dsa
+- "Explain pointers in C" -> c_programming
+- Classify by the concept, not merely by the programming language.
+- A broad introductory question about a listed topic belongs
+  to that topic.
+- Use general only when the question is unrelated to the
+  listed categories.
+- Never select general merely because the question is broad,
+  introductory, or asks for an explanation.
 
-CODE GENERATION AND DEBUGGING RULES:
-8. Classify a question by its MAIN SUBJECT, not by the fact that it asks for code.
-9. If the user asks for code, implementation, an example program,
-   debugging, or an algorithm, select the topic of the underlying concept.
-10. Examples:
-    - "Give me Python code for K-Means" -> ml
-    - "Implement linear regression" -> ml
-    - "Write a neural network in Python" -> dl
-    - "Give me code for a linked list" -> dsa
-    - "Implement a stack using an array" -> dsa
-    - "Give me code for a hash function" -> dsa
-    - "Implement binary search in Python" -> dsa
-    - "Debug my BFS algorithm" -> dsa
-    - "Write a C program using pointers" -> c_programming
-    - "Explain malloc and free in C" -> c_programming
-    - "Debug this C program" -> c_programming
-    - "Create a Python calculator" -> general
-11. The programming language alone does not determine the topic.
-    For example, Python code for a linked list belongs to "dsa",
-    while Python code for K-Means belongs to "ml".
-12. For questions containing code, identify what the code is intended
-    to implement before selecting the topic.
-13. If the question is unrelated to all listed topics, select "general".
-
-Return exactly ONE label from:
+Return exactly ONE label:
 ml, dl, dsa, c_programming, general
 
-Do not return explanations, punctuation, quotes, or extra text.
+No explanation, punctuation, quotes, or additional text.
 
 Question: {question}
 
 Topic:
 """
-
