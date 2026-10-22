@@ -1,7 +1,8 @@
-Django>=5.2,<6
-python-dotenv
+
+Django==5.2.13
 gunicorn
 whitenoise
+python-dotenv
 langchain-community
 langchain-openai
 langchain-chroma
