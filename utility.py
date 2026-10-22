@@ -54,28 +54,33 @@ def build_pdf_store(topic_name: str, pdf: Path) -> Chroma:
     if not chunks:
         raise ValueError(f"No text extracted from {pdf.name}")
 
-    # 5. Define the persistent storage directory
+        # 5. Persistent storage directory
     persist_dir = CHROMA_ROOT / topic_name
 
-    # 6. Remove the previous index, if it exists
-    if persist_dir.exists():
-        print(f"  🗑️ Removing old index: {persist_dir}")
-        shutil.rmtree(persist_dir)
-
-    # 7. Create embeddings and save them in Chroma
+        # 6. Reuse the existing index if it exists
     embeddings = OpenAIEmbeddings(
         model="text-embedding-3-small"
-    )
+        )
 
+    if persist_dir.exists() and any(persist_dir.iterdir()):
+        print(f"Loading existing Chroma index: {persist_dir}")
+
+        return Chroma(
+            collection_name=topic_name,
+            persist_directory=str(persist_dir),
+            embedding_function=embeddings,
+        )
+
+        # 7. Build and save a new index only if none exists
     store = Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        collection_name=topic_name,
-        persist_directory=str(persist_dir),
-    )
+            documents=chunks,
+            embedding=embeddings,
+            collection_name=topic_name,
+            persist_directory=str(persist_dir),
+        )
 
-    print(f"  💾 Saved vector store: {persist_dir}")
-    print(f"  ✅ Indexed {len(chunks)} chunks")
+    print(f"Saved vector store: {persist_dir}")
+    print(f"Indexed {len(chunks)} chunks")
 
     return store
 

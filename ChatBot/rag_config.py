@@ -1,6 +1,7 @@
+
 from pathlib import Path
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 load_dotenv()
 
@@ -10,8 +11,12 @@ model = ChatOpenAI(
     streaming=True,
 )
 
+# Embeddings used to search the Chroma vector database
+embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small"
+)
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CHROMA_ROOT = PROJECT_ROOT / "chroma_topics"
 
-# Shared vector-store dictionary
 STORES = {}

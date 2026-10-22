@@ -2,10 +2,11 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+
 from langgraph.graph import StateGraph, START, END
 from langchain_chroma import Chroma
 
-from ChatBot.rag_config import CHROMA_ROOT, model, STORES
+from ChatBot.rag_config import CHROMA_ROOT, model, STORES, embeddings
 from utility import (
     RAGState,
     detect_topic,
@@ -35,26 +36,92 @@ BOOKS_DIR.mkdir(parents=True, exist_ok=True)
 CHROMA_ROOT.mkdir(parents=True, exist_ok=True)
 
 
-pdf_files = sorted(BOOKS_DIR.glob("*.pdf"))
+# pdf_files = sorted(BOOKS_DIR.glob("*.pdf"))
+#
+#
+# STORES.clear()
+#
+# for pdf in pdf_files:
+#     topic_name = detect_topic(pdf)
+#
+#     # General PDFs are not indexed as topic-specific stores here.
+#     if topic_name == "general":
+#
+#         continue
+#
+#     try:
+#         store = build_pdf_store(topic_name, pdf)
+#         STORES[topic_name] = store
+#
+#     except Exception as exc:
+#         print(f"Failed: {pdf.name}")
+#         print(f"Error: {exc}\n")
 
 
-STORES.clear()
+# def load_pdf_stores():
+#     """Load existing topic PDFs into Chroma stores."""
+#     # pdf_files = sorted(BOOKS_DIR.glob("*.pdf"))
+#
+#     store_path = CHROMA_ROOT / topic_name
+#
+#     if store_path.exists():
+#         store = Chroma(
+#             collection_name=topic_name,
+#             persist_directory=str(store_path),
+#             embedding_function=embeddings,
+#         )
+#     else:
+#         print(f"Chroma index not found for: {topic_name}")
+#         continue
+#
+#     for pdf in pdf_files:
+#         topic_name = detect_topic(pdf)
+#
+#         if topic_name == "general":
+#             continue
+#
+#         try:
+#             # Build the store only when this function is called.
+#             store = build_pdf_store(topic_name, pdf)
+#             STORES[topic_name] = store
+#             print(f"Loaded store for: {topic_name}")
+#
+#         except Exception as exc:
+#             print(f"Failed: {pdf.name}")
+#             print(f"Error: {exc}")
 
-for pdf in pdf_files:
-    topic_name = detect_topic(pdf)
 
-    # General PDFs are not indexed as topic-specific stores here.
-    if topic_name == "general":
 
-        continue
 
-    try:
-        store = build_pdf_store(topic_name, pdf)
-        STORES[topic_name] = store
+def load_pdf_stores():
+    """Load existing Chroma indexes without reprocessing PDFs."""
 
-    except Exception as exc:
-        print(f"Failed: {pdf.name}")
-        print(f"Error: {exc}\n")
+    pdf_files = sorted(BOOKS_DIR.glob("*.pdf"))
+
+    for pdf in pdf_files:
+        topic_name = detect_topic(pdf)
+
+        if topic_name == "general":
+            continue
+
+        store_path = CHROMA_ROOT / topic_name
+
+        if not store_path.exists():
+            print(f"Chroma index not found for: {topic_name}")
+            continue
+
+        try:
+            store = Chroma(
+                collection_name=topic_name,
+                persist_directory=str(store_path),
+                embedding_function=embeddings,
+            )
+
+            STORES[topic_name] = store
+            print(f"Loaded existing Chroma index: {topic_name}")
+
+        except Exception as exc:
+            print(f"Failed to load {topic_name}: {exc}")
 
 
 def retrieve_general_node(state: RAGState):
