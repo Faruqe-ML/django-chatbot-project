@@ -139,7 +139,18 @@ def retrieve_general_node(state: RAGState):
 # --------------------------------------------------
 # 4. Create the LangGraph workflow
 # --------------------------------------------------
+load_pdf_stores()
 
+print("\n========== CHROMA DEBUG ==========")
+print("BOOKS_DIR:", BOOKS_DIR)
+print("PDF files:", [pdf.name for pdf in BOOKS_DIR.glob("*.pdf")])
+print("CHROMA_ROOT:", CHROMA_ROOT)
+print(
+    "Chroma folders:",
+    [p.name for p in CHROMA_ROOT.iterdir() if p.is_dir()]
+)
+print("Loaded STORES:", list(STORES.keys()))
+print("==================================\n")
 graph = StateGraph(RAGState)
 
 graph.add_node("router", router_node)

@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-
+import traceback
 from ChatBot.llm_utility import app
 
 questions = []
@@ -47,9 +47,21 @@ def chat(request):
             "recent_questions": questions
         })
 
+
     except Exception as error:
 
+        print("CHAT ENDPOINT ERROR:", repr(error), flush=True)
+
+        traceback.print_exc()
+
         return JsonResponse(
-            {"error": "Unable to generate a response. Check the server terminal."},
+
+            {
+
+                "error": "Unable to generate a response. Check the server terminal."
+
+            },
+
             status=500
+
         )
